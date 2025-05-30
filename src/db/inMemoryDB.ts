@@ -1,3 +1,4 @@
+import { Artist } from 'src/artist/entities/artist.entity';
 import { User } from 'src/user/entities/user.entity';
 
 interface Entity {
@@ -6,7 +7,7 @@ interface Entity {
   version?: number;
 }
 
-class InMemoryDB<T extends Entity> {
+class InMemoryDB<T> {
   private db: Map<string, T> = new Map();
 
   create(id: string, entity: T): T | undefined {
@@ -31,8 +32,19 @@ class InMemoryDB<T extends Entity> {
     const existingEntity = this.db.get(id);
     const updatedEntity = { ...existingEntity, ...entity };
 
-    if (updatedEntity.updatedAt) updatedEntity.updatedAt = Date.now();
-    if (updatedEntity.version) updatedEntity.version += 1;
+    if (
+      'updatedAt' in updatedEntity &&
+      typeof updatedEntity.updatedAt === 'number'
+    ) {
+      updatedEntity.updatedAt = Date.now();
+    }
+
+    if (
+      'version' in updatedEntity &&
+      typeof updatedEntity.version === 'number'
+    ) {
+      updatedEntity.version = (updatedEntity.version || 0) + 1;
+    }
 
     this.db.set(id, updatedEntity);
 
@@ -50,10 +62,4 @@ class InMemoryDB<T extends Entity> {
 
 export const userDB = new InMemoryDB<User>();
 
-// Usage example:
-// const userDB = new InMemoryDB<User>();
-// userDB.create('1', new User({ id: '1', login: 'user1', password: 'pass1', createdAt: new Date(), updatedAt: new Date(), version: 1 }));
-// const allUsers = userDB.findAll();
-// const user = userDB.findOne('1');
-// userDB.update('1', new User({ id: '1', login: 'user1', password: 'newpass', createdAt: new Date(), updatedAt: new Date(), version: 2 }));
-// userDB.remove('1');
+export const artistDB = new InMemoryDB<Artist>();
