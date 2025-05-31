@@ -1,11 +1,6 @@
+import { Album } from 'src/album/entities/album.entity';
 import { Artist } from 'src/artist/entities/artist.entity';
 import { User } from 'src/user/entities/user.entity';
-
-interface Entity {
-  updatedAt?: number;
-  createdAt?: number;
-  version?: number;
-}
 
 class InMemoryDB<T> {
   private db: Map<string, T> = new Map();
@@ -63,3 +58,5 @@ class InMemoryDB<T> {
 export const userDB = new InMemoryDB<User>();
 
 export const artistDB = new InMemoryDB<Artist>();
+
+export const albumDB = new InMemoryDB<Album>();
