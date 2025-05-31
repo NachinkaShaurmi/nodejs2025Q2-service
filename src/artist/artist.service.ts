@@ -1,4 +1,6 @@
 import {
+  forwardRef,
+  Inject,
   Injectable,
   InternalServerErrorException,
   NotFoundException,
@@ -9,10 +11,14 @@ import { artistDB } from 'src/db/inMemoryDB';
 import { Artist } from './entities/artist.entity';
 import { AlbumService } from 'src/album/album.service';
 import { TrackService } from 'src/track/track.service';
+import { FavsService } from 'src/favs/favs.service';
 
 @Injectable()
 export class ArtistService {
   constructor(
+    @Inject(forwardRef(() => FavsService))
+    private readonly favsService: FavsService,
+
     private readonly albumService: AlbumService,
     private readonly trackService: TrackService,
   ) {}
@@ -60,6 +66,12 @@ export class ArtistService {
     const artist = artistDB.findOne(id);
 
     if (!artist) throw new NotFoundException('Artist not found');
+
+    const favArtist = this.favsService
+      .findAll()
+      .artists.find((favArtist) => favArtist.id === id);
+
+    if (favArtist) this.favsService.removeArtist(id);
 
     const removed = artistDB.remove(id);
 

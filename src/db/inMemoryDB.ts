@@ -63,3 +63,9 @@ export const artistDB = new InMemoryDB<Artist>();
 export const albumDB = new InMemoryDB<Album>();
 
 export const trackDB = new InMemoryDB<Track>();
+
+export const favArtistDB = new InMemoryDB<Artist>();
+
+export const favAlbumDB = new InMemoryDB<Album>();
+
+export const favTrackDB = new InMemoryDB<Track>();

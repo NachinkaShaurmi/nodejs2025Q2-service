@@ -1,13 +1,24 @@
-import { Inject, Injectable, NotFoundException } from '@nestjs/common';
+import {
+  forwardRef,
+  Inject,
+  Injectable,
+  NotFoundException,
+} from '@nestjs/common';
 import { CreateAlbumDto } from './dto/create-album.dto';
 import { UpdateAlbumDto } from './dto/update-album.dto';
 import { Album } from './entities/album.entity';
 import { albumDB } from 'src/db/inMemoryDB';
 import { TrackService } from 'src/track/track.service';
+import { FavsService } from 'src/favs/favs.service';
 
 @Injectable()
 export class AlbumService {
-  constructor(private readonly trackService: TrackService) {}
+  constructor(
+    @Inject(forwardRef(() => FavsService))
+    private readonly favsService: FavsService,
+
+    private readonly trackService: TrackService,
+  ) {}
 
   create(createAlbumDto: CreateAlbumDto) {
     const id = crypto.randomUUID();
@@ -54,6 +65,12 @@ export class AlbumService {
     const album = albumDB.findOne(id);
 
     if (!album) throw new NotFoundException('Album not found');
+
+    const favAlbum = this.favsService
+      .findAll()
+      .albums.find((fav) => fav.id === id);
+
+    if (favAlbum) this.favsService.removeAlbum(id);
 
     const removed = albumDB.remove(id);
 

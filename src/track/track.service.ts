@@ -1,11 +1,22 @@
-import { Injectable, NotFoundException } from '@nestjs/common';
+import {
+  forwardRef,
+  Inject,
+  Injectable,
+  NotFoundException,
+} from '@nestjs/common';
 import { CreateTrackDto } from './dto/create-track.dto';
 import { UpdateTrackDto } from './dto/update-track.dto';
 import { Track } from './entities/track.entity';
 import { trackDB } from 'src/db/inMemoryDB';
+import { FavsService } from 'src/favs/favs.service';
 
 @Injectable()
 export class TrackService {
+  constructor(
+    @Inject(forwardRef(() => FavsService))
+    private readonly favsService: FavsService,
+  ) {}
+
   create(createTrackDto: CreateTrackDto) {
     const id = crypto.randomUUID();
 
@@ -53,6 +64,12 @@ export class TrackService {
     const track = trackDB.findOne(id);
 
     if (!track) throw new NotFoundException('Track not found');
+
+    const favTrack = this.favsService
+      .findAll()
+      .tracks.find((fav) => fav.id === id);
+
+    if (favTrack) this.favsService.removeTrack(id);
 
     const removed = trackDB.remove(id);
 
