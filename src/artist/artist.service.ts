@@ -8,10 +8,14 @@ import { UpdateArtistDto } from './dto/update-artist.dto';
 import { artistDB } from 'src/db/inMemoryDB';
 import { Artist } from './entities/artist.entity';
 import { AlbumService } from 'src/album/album.service';
+import { TrackService } from 'src/track/track.service';
 
 @Injectable()
 export class ArtistService {
-  constructor(private readonly albumService: AlbumService) {}
+  constructor(
+    private readonly albumService: AlbumService,
+    private readonly trackService: TrackService,
+  ) {}
 
   create(createArtistDto: CreateArtistDto) {
     const id = crypto.randomUUID();
@@ -63,6 +67,7 @@ export class ArtistService {
       throw new InternalServerErrorException('Failed to remove artist');
 
     this.albumService.removeArtist(id);
+    this.trackService.removeArtist(id);
 
     return;
   }

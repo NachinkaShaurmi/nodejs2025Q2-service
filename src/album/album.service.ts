@@ -3,10 +3,11 @@ import { CreateAlbumDto } from './dto/create-album.dto';
 import { UpdateAlbumDto } from './dto/update-album.dto';
 import { Album } from './entities/album.entity';
 import { albumDB } from 'src/db/inMemoryDB';
+import { TrackService } from 'src/track/track.service';
 
 @Injectable()
 export class AlbumService {
-  constructor() {}
+  constructor(private readonly trackService: TrackService) {}
 
   create(createAlbumDto: CreateAlbumDto) {
     const id = crypto.randomUUID();
@@ -59,6 +60,8 @@ export class AlbumService {
     if (!removed) {
       throw new NotFoundException('Failed to remove album');
     }
+
+    this.trackService.removeAlbum(id);
 
     return;
   }

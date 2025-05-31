@@ -1,5 +1,6 @@
 import { Album } from 'src/album/entities/album.entity';
 import { Artist } from 'src/artist/entities/artist.entity';
+import { Track } from 'src/track/entities/track.entity';
 import { User } from 'src/user/entities/user.entity';
 
 class InMemoryDB<T> {
@@ -60,3 +61,5 @@ export const userDB = new InMemoryDB<User>();
 export const artistDB = new InMemoryDB<Artist>();
 
 export const albumDB = new InMemoryDB<Album>();
+
+export const trackDB = new InMemoryDB<Track>();
