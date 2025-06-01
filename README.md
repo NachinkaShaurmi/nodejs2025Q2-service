@@ -8,7 +8,11 @@
 ## Downloading
 
 ```
-git clone {repository URL}
+git clone https://github.com/NachinkaShaurmi/nodejs2025Q2-service.git
+
+cd nodejs2025Q2-service
+
+git checkout dev
 ```
 
 ## Installing NPM modules
@@ -16,6 +20,10 @@ git clone {repository URL}
 ```
 npm install
 ```
+
+## Create .env file
+
+Copy variables from .env.example to .env file
 
 ## Running application
 
