@@ -5,7 +5,7 @@ info:
   version: 1.0.0
 
 servers:
-  - url: /api
+  - url: http://localhost:4000
 
 components:
   schemas:
@@ -61,6 +61,7 @@ components:
           type: string
           format: uuid
           nullable: true
+          example: '14f2c6e6-6598-420c-a50f-c64afbafdc3e'
       required:
         - id
         - name
@@ -77,10 +78,12 @@ components:
           type: string
           format: uuid
           nullable: true
+          example: '91e4f271-d9a4-4fbb-a103-d5bb80307b8f'
         albumId:
           type: string
           format: uuid
           nullable: true
+          example: '60c5f903-2f4a-4b37-91e9-961243f131ff'
         duration:
           type: integer
           description: In seconds
@@ -117,79 +120,79 @@ security:
   - bearerAuth: []
 
 paths:
-  /login:
-    post:
-      tags:
-        - Login
-      security: []
-      summary: Login
-      description: Logins a user and returns a JWT-token
-      requestBody:
-        required: true
-        content:
-          application/json:
-            schema:
-              type: object
-              title: example
-              properties:
-                login:
-                  type: string
-                  description: Username
-                password:
-                  type: string
-                  description: Password
-              required:
-                - user
-                - login
-      responses:
-        200:
-          description: Successful login.
-          content:
-            application/json:
-              schema:
-                type: object
-                properties:
-                  token:
-                    type: string
-                description: JWT Token
-        403:
-          description: Incorrect login or password
-  /signup:
-    post:
-      tags:
-        - Signup
-      security: [ ]
-      summary: Signup
-      description: Signup a user
-      requestBody:
-        required: true
-        content:
-          application/json:
-            schema:
-              type: object
-              title: example
-              properties:
-                login:
-                  type: string
-                  minLength: 3
-                  maxLength: 255
-                  description: Username
-                password:
-                  type: string
-                  format: password
-                  pattern: ^[a-zA-Z0-9]{3,30}
-                  description: Password
-              required:
-                - login
-                - password
-      responses:
-        204:
-          description: Successful signup
-        400:
-          description: Bad request
-        409:
-          description: Conflict. Login already exists
-  /users:
+  # /login:
+  #   post:
+  #     tags:
+  #       - Login
+  #     security: []
+  #     summary: Login
+  #     description: Logins a user and returns a JWT-token
+  #     requestBody:
+  #       required: true
+  #       content:
+  #         application/json:
+  #           schema:
+  #             type: object
+  #             title: example
+  #             properties:
+  #               login:
+  #                 type: string
+  #                 description: Username
+  #               password:
+  #                 type: string
+  #                 description: Password
+  #             required:
+  #               - user
+  #               - login
+  #     responses:
+  #       200:
+  #         description: Successful login.
+  #         content:
+  #           application/json:
+  #             schema:
+  #               type: object
+  #               properties:
+  #                 token:
+  #                   type: string
+  #               description: JWT Token
+  #       403:
+  #         description: Incorrect login or password
+  # /signup:
+  #   post:
+  #     tags:
+  #       - Signup
+  #     security: []
+  #     summary: Signup
+  #     description: Signup a user
+  #     requestBody:
+  #       required: true
+  #       content:
+  #         application/json:
+  #           schema:
+  #             type: object
+  #             title: example
+  #             properties:
+  #               login:
+  #                 type: string
+  #                 minLength: 3
+  #                 maxLength: 255
+  #                 description: Username
+  #               password:
+  #                 type: string
+  #                 format: password
+  #                 pattern: ^[a-zA-Z0-9]{3,30}
+  #                 description: Password
+  #             required:
+  #               - login
+  #               - password
+  #     responses:
+  #       204:
+  #         description: Successful signup
+  #       400:
+  #         description: Bad request
+  #       409:
+  #         description: Conflict. Login already exists
+  /user:
     get:
       tags:
         - Users
@@ -239,7 +242,7 @@ paths:
           description: Bad request. body does not contain required fields
         401:
           $ref: '#/components/responses/UnauthorizedError'
-  /users/{userId}:
+  /user/{userId}:
     parameters:
       - name: userId
         in: path
@@ -334,7 +337,7 @@ paths:
           $ref: '#/components/responses/UnauthorizedError'
         404:
           description: User not found
-  /tracks:
+  /track:
     get:
       tags:
         - Track
@@ -368,9 +371,11 @@ paths:
                 artistId:
                   type: string
                   format: uuid
+                  example: 'bbb11819-8f80-42c6-9b44-e2038268ccaa'
                 albumId:
                   type: string
                   format: uuid
+                  example: 'f0504f2f-9104-4648-8931-34ee7c0d3beb'
                 duration:
                   type: integer
                   description: In seconds
@@ -388,7 +393,7 @@ paths:
           description: Bad request. body does not contain required fields
         401:
           $ref: '#/components/responses/UnauthorizedError'
-  /tracks/{id}:
+  /track/{id}:
     parameters:
       - name: id
         in: path
@@ -434,6 +439,7 @@ paths:
                   type: string
                   format: uuid
                   nullable: true
+                  example: 'b896c24a-1dfd-44ad-91aa-b6674a2d28a3'
                 duration:
                   type: integer
                   description: In seconds
@@ -442,6 +448,7 @@ paths:
                   type: string
                   format: uuid
                   nullable: true
+                  example: 'df69b74f-2f8c-4260-b4b1-5cd7f9396cd2'
               required:
                 - name
                 - duration
@@ -464,6 +471,7 @@ paths:
                     type: string
                     format: uuid
                     nullable: true
+                    example: 'fff32c68-6a77-498a-89ad-cfe1776cad78'
                   duration:
                     type: integer
                     description: In seconds
@@ -472,6 +480,7 @@ paths:
                     type: string
                     format: uuid
                     nullable: true
+                    example: '7653a208-ce0c-4ca2-bd15-258ddfe164f3'
         400:
           description: Bad request. trackId is invalid (not uuid)
         401:
@@ -492,7 +501,7 @@ paths:
           $ref: '#/components/responses/UnauthorizedError'
         404:
           description: Track was not found.
-  /albums:
+  /album:
     get:
       tags:
         - Album
@@ -530,6 +539,7 @@ paths:
                   type: string
                   format: uuid
                   nullable: true
+                  example: 'd19f6fbf-708b-4781-92ef-1465065d0b5e'
               required:
                 - name
                 - year
@@ -544,7 +554,7 @@ paths:
           description: Bad request. body does not contain required fields
         401:
           $ref: '#/components/responses/UnauthorizedError'
-  /albums/{id}:
+  /album/{id}:
     parameters:
       - name: id
         in: path
@@ -591,6 +601,7 @@ paths:
                   type: string
                   format: uuid
                   nullable: true
+                  example: 'adec0ff3-b3c4-463f-b47f-4b6b3d73a874'
               required:
                 - name
                 - year
@@ -621,7 +632,7 @@ paths:
           $ref: '#/components/responses/UnauthorizedError'
         404:
           description: Album was not found.
-  /artists:
+  /artist:
     get:
       tags:
         - Artist
@@ -668,7 +679,7 @@ paths:
           description: Bad request. body does not contain required fields
         401:
           $ref: '#/components/responses/UnauthorizedError'
-  /artists/{id}:
+  /artist/{id}:
     parameters:
       - name: id
         in: path
