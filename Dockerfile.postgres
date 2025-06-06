@@ -1,0 +1,5 @@
+FROM postgres:16-alpine
+
+COPY ./init-scripts/ /docker-entrypoint-initdb.d/
+
+EXPOSE ${POSTGRES_PORT:-5432}
