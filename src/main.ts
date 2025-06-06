@@ -1,18 +1,18 @@
 import { NestFactory } from '@nestjs/core';
 import { AppModule } from './app.module';
-import { env } from 'node:process';
 import { ValidationPipe, ClassSerializerInterceptor } from '@nestjs/common';
 import { Reflector } from '@nestjs/core';
 import { OpenAPIObject, SwaggerModule } from '@nestjs/swagger';
 import { readFile } from 'fs/promises';
 import { load } from 'js-yaml';
 import { dirname, join } from 'node:path';
-import 'dotenv/config';
-
-const PORT = env.PORT || 4000;
+import { ConfigService } from '@nestjs/config';
 
 async function bootstrap() {
   const app = await NestFactory.create(AppModule);
+
+  const configService = app.get(ConfigService);
+  const PORT = configService.get<number>('PORT', 4000);
 
   app.useGlobalPipes(new ValidationPipe({ transform: true }));
 
