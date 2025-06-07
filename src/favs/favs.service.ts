@@ -2,109 +2,119 @@ import {
   forwardRef,
   Inject,
   Injectable,
-  NotFoundException,
   UnprocessableEntityException,
 } from '@nestjs/common';
-import { AlbumService } from 'src/album/album.service';
-import { Album } from 'src/album/entities/album.entity';
+import { InjectRepository } from '@nestjs/typeorm';
+import { Repository } from 'typeorm';
 import { ArtistService } from 'src/artist/artist.service';
-import { favAlbumDB, favArtistDB, favTrackDB } from 'src/db/inMemoryDB';
-import { Track } from 'src/track/entities/track.entity';
+import { AlbumService } from 'src/album/album.service';
 import { TrackService } from 'src/track/track.service';
+import { Favorite } from './entities/fav.entity';
 
 @Injectable()
 export class FavsService {
   constructor(
-    @Inject(forwardRef(() => TrackService))
-    private readonly trackService: TrackService,
-
-    @Inject(forwardRef(() => AlbumService))
-    private readonly albumService: AlbumService,
-
+    @InjectRepository(Favorite)
+    private favoriteRepository: Repository<Favorite>,
     @Inject(forwardRef(() => ArtistService))
     private readonly artistService: ArtistService,
+    @Inject(forwardRef(() => AlbumService))
+    private readonly albumService: AlbumService,
+    @Inject(forwardRef(() => TrackService))
+    private readonly trackService: TrackService,
   ) {}
 
-  findAll() {
-    const tracks = favTrackDB.findAll();
-    const albums = favAlbumDB.findAll();
-    const artists = favArtistDB.findAll();
+  async findAll() {
+    const favorites = await this.favoriteRepository.find();
 
-    return { tracks, albums, artists };
-  }
+    const artists = [];
+    const albums = [];
+    const tracks = [];
 
-  addTrack(id: string) {
-    let track: Track;
-    try {
-      track = this.trackService.findOne(id);
-    } catch (error) {
-      throw new UnprocessableEntityException('Track not found');
+    for (const fav of favorites) {
+      try {
+        const artist = await this.artistService.findOne(fav.artistId);
+        artists.push(artist);
+      } catch (error) {}
     }
-    const favTrack = favTrackDB.create(id, track);
 
-    return favTrack;
-  }
-
-  addAlbum(id: string) {
-    let album: Album;
-    try {
-      album = this.albumService.findOne(id);
-    } catch (error) {
-      throw new UnprocessableEntityException('Album not found');
+    for (const fav of favorites) {
+      try {
+        const album = await this.albumService.findOne(fav.albumId);
+        albums.push(album);
+      } catch (error) {}
     }
-    const favAlbum = favAlbumDB.create(id, album);
 
-    return favAlbum;
+    for (const fav of favorites) {
+      try {
+        const track = await this.trackService.findOne(fav.trackId);
+        tracks.push(track);
+      } catch (error) {}
+    }
+
+    return { artists, albums, tracks };
   }
 
-  addArtist(id: string) {
-    let artist;
+  async addArtist(id: string) {
     try {
-      artist = this.artistService.findOne(id);
+      await this.artistService.findOne(id);
     } catch (error) {
       throw new UnprocessableEntityException('Artist not found');
     }
-    const favArtist = favArtistDB.create(id, artist);
 
-    return favArtist;
+    const existing = await this.favoriteRepository.findOneBy({ artistId: id });
+    if (existing) return;
+
+    const favorite = this.favoriteRepository.create({ artistId: id });
+    await this.favoriteRepository.save(favorite);
   }
 
-  removeTrack(id: string) {
-    const track = favTrackDB.findOne(id);
+  async addAlbum(id: string) {
+    try {
+      await this.albumService.findOne(id);
+    } catch (error) {
+      throw new UnprocessableEntityException('Album not found');
+    }
 
-    if (!track) throw new NotFoundException('Track not found in favs');
+    const existing = await this.favoriteRepository.findOneBy({ albumId: id });
+    if (existing) return;
 
-    const removed = favTrackDB.remove(id);
-
-    if (!removed)
-      throw new NotFoundException('Failed to remove track from favs');
-
-    return;
+    const favorite = this.favoriteRepository.create({ albumId: id });
+    await this.favoriteRepository.save(favorite);
   }
 
-  removeAlbum(id: string) {
-    const album = favAlbumDB.findOne(id);
+  async addTrack(id: string) {
+    try {
+      await this.trackService.findOne(id);
+    } catch (error) {
+      throw new UnprocessableEntityException('Track not found');
+    }
 
-    if (!album) throw new NotFoundException('Album not found in favs');
+    const existing = await this.favoriteRepository.findOneBy({ trackId: id });
+    if (existing) return;
 
-    const removed = favAlbumDB.remove(id);
-
-    if (!removed)
-      throw new NotFoundException('Failed to remove album from favs');
-
-    return;
+    const favorite = this.favoriteRepository.create({ trackId: id });
+    await this.favoriteRepository.save(favorite);
   }
 
-  removeArtist(id: string) {
-    const artist = favArtistDB.findOne(id);
+  async removeArtist(id: string) {
+    const favorite = await this.favoriteRepository.findOneBy({ artistId: id });
+    if (favorite) {
+      await this.favoriteRepository.remove(favorite);
+    }
+  }
 
-    if (!artist) throw new NotFoundException('Artist not found in favs');
+  async removeAlbum(id: string) {
+    const favorite = await this.favoriteRepository.findOneBy({ albumId: id });
+    if (favorite) {
+      await this.favoriteRepository.remove(favorite);
+    }
+  }
 
-    const removed = favArtistDB.remove(id);
-
-    if (!removed)
-      throw new NotFoundException('Failed to remove artist from favs');
-
-    return;
+  async removeTrack(id: string) {
+    const favorite = await this.favoriteRepository.findOneBy({ trackId: id });
+    if (favorite) {
+      await this.favoriteRepository.remove(favorite);
+    }
   }
 }
