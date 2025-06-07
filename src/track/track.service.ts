@@ -1,15 +1,9 @@
-import {
-  forwardRef,
-  Inject,
-  Injectable,
-  NotFoundException,
-} from '@nestjs/common';
+import { Injectable, NotFoundException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { CreateTrackDto } from './dto/create-track.dto';
 import { UpdateTrackDto } from './dto/update-track.dto';
 import { Track } from './entities/track.entity';
-import { FavsService } from 'src/favs/favs.service';
 import { isUndefined } from 'src/helpers';
 
 @Injectable()
@@ -17,8 +11,6 @@ export class TrackService {
   constructor(
     @InjectRepository(Track)
     private trackRepository: Repository<Track>,
-    @Inject(forwardRef(() => FavsService))
-    private readonly favsService: FavsService,
   ) {}
 
   async create(createTrackDto: CreateTrackDto) {
