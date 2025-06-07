@@ -14,14 +14,9 @@ export class ArtistService {
   ) {}
 
   async create(createArtistDto: CreateArtistDto) {
-    const artist = this.artistRepository.create({
-      name: createArtistDto.name,
-      grammy: createArtistDto.grammy,
-    });
+    const artist = this.artistRepository.create(createArtistDto);
 
-    await this.artistRepository.save(artist);
-
-    return artist;
+    return this.artistRepository.save(artist);
   }
 
   async findAll() {
@@ -37,30 +32,21 @@ export class ArtistService {
   }
 
   async update(id: string, updateArtistDto: UpdateArtistDto) {
-    const artist = await this.artistRepository.findOneBy({ id });
+    const result = await this.artistRepository.update(id, updateArtistDto);
 
-    if (!artist) throw new NotFoundException('Artist not found');
+    if (result.affected === 0) {
+      throw new NotFoundException('Artist not found');
+    }
 
-    Object.assign(artist, {
-      name: !isUndefined(updateArtistDto.name)
-        ? updateArtistDto.name
-        : artist.name,
-      grammy: !isUndefined(updateArtistDto.grammy)
-        ? updateArtistDto.grammy
-        : artist.grammy,
-    });
-
-    await this.artistRepository.save(artist);
-
-    return artist;
+    return this.findOne(id);
   }
 
   async remove(id: string) {
-    const artist = await this.artistRepository.findOneBy({ id });
+    const result = await this.artistRepository.delete(id);
 
-    if (!artist) throw new NotFoundException('Artist not found');
-
-    await this.artistRepository.remove(artist);
+    if (result.affected === 0) {
+      throw new NotFoundException('Artist not found');
+    }
 
     return { id };
   }

@@ -4,7 +4,6 @@ import { Repository } from 'typeorm';
 import { CreateTrackDto } from './dto/create-track.dto';
 import { UpdateTrackDto } from './dto/update-track.dto';
 import { Track } from './entities/track.entity';
-import { isUndefined } from 'src/helpers';
 
 @Injectable()
 export class TrackService {
@@ -14,16 +13,9 @@ export class TrackService {
   ) {}
 
   async create(createTrackDto: CreateTrackDto) {
-    const track = this.trackRepository.create({
-      name: createTrackDto.name,
-      duration: createTrackDto.duration,
-      albumId: createTrackDto.albumId,
-      artistId: createTrackDto.artistId,
-    });
+    const track = this.trackRepository.create(createTrackDto);
 
-    await this.trackRepository.save(track);
-
-    return track;
+    return this.trackRepository.save(track);
   }
 
   async findAll() {
@@ -39,34 +31,21 @@ export class TrackService {
   }
 
   async update(id: string, updateTrackDto: UpdateTrackDto) {
-    const track = await this.trackRepository.findOneBy({ id });
+    const result = await this.trackRepository.update(id, updateTrackDto);
 
-    if (!track) throw new NotFoundException('Track not found');
+    if (result.affected === 0) {
+      throw new NotFoundException('Track not found');
+    }
 
-    Object.assign(track, {
-      name: isUndefined(updateTrackDto.name) ? track.name : updateTrackDto.name,
-      duration: isUndefined(updateTrackDto.duration)
-        ? track.duration
-        : updateTrackDto.duration,
-      albumId: isUndefined(updateTrackDto.albumId)
-        ? track.albumId
-        : updateTrackDto.albumId,
-      artistId: isUndefined(updateTrackDto.artistId)
-        ? track.artistId
-        : updateTrackDto.artistId,
-    });
-
-    await this.trackRepository.save(track);
-
-    return track;
+    return this.findOne(id);
   }
 
   async remove(id: string) {
-    const track = await this.trackRepository.findOneBy({ id });
+    const result = await this.trackRepository.delete(id);
 
-    if (!track) throw new NotFoundException('Track not found');
-
-    await this.trackRepository.remove(track);
+    if (result.affected === 0) {
+      throw new NotFoundException('Track not found');
+    }
 
     return { id };
   }

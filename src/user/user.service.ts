@@ -4,7 +4,8 @@ import {
   NotFoundException,
 } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Repository } from 'typeorm';
+import { Repository, EntityManager } from 'typeorm';
+import * as bcrypt from 'bcrypt';
 import { CreateUserDto } from './dto/create-user.dto';
 import { UpdateUserDto } from './dto/update-user.dto';
 import { User } from './entities/user.entity';
@@ -17,14 +18,9 @@ export class UserService {
   ) {}
 
   async create(createUserDto: CreateUserDto) {
-    const user = this.userRepository.create({
-      login: createUserDto.login,
-      password: createUserDto.password,
-    });
+    const user = this.userRepository.create(createUserDto);
 
-    await this.userRepository.save(user);
-
-    return user;
+    return this.userRepository.save(user);
   }
 
   async findAll() {
@@ -40,26 +36,48 @@ export class UserService {
   }
 
   async update(id: string, updateUserDto: UpdateUserDto) {
-    const user = await this.userRepository.findOneBy({ id });
+    return this.userRepository.manager.transaction(
+      async (manager: EntityManager) => {
+        const user = await manager.findOneBy(User, { id });
+        if (!user) throw new NotFoundException('User not found');
 
-    if (!user) throw new NotFoundException('User not found');
+        const isPasswordValid = await bcrypt.compare(
+          updateUserDto.oldPassword,
+          user.password,
+        );
 
-    if (updateUserDto.oldPassword !== user.password)
-      throw new ForbiddenException('Old password is incorrect');
+        if (!isPasswordValid) {
+          throw new ForbiddenException('Old password is incorrect');
+        }
 
-    user.password = updateUserDto.newPassword;
-    user.version += 1;
+        const hashedPassword = await bcrypt.hash(updateUserDto.newPassword, 10);
 
-    await this.userRepository.save(user);
+        const result = await manager
+          .createQueryBuilder()
+          .update(User)
+          .set({ password: hashedPassword, version: () => 'version + 1' })
+          .where('id = :id AND version = :version', {
+            id,
+            version: user.version,
+          })
+          .execute();
 
-    return user;
+        if (result.affected === 0) {
+          throw new NotFoundException('User not found or version conflict');
+        }
+
+        return manager.findOneBy(User, { id });
+      },
+    );
   }
 
   async remove(id: string) {
-    const user = await this.userRepository.findOneBy({ id });
+    const result = await this.userRepository.delete(id);
 
-    if (!user) throw new NotFoundException('User not found');
+    if (result.affected === 0) {
+      throw new NotFoundException('User not found');
+    }
 
-    await this.userRepository.remove(user);
+    return { id };
   }
 }

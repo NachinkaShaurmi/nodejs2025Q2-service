@@ -1,5 +1,4 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
-import { isUndefined } from '../helpers';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { CreateAlbumDto } from './dto/create-album.dto';
@@ -14,14 +13,9 @@ export class AlbumService {
   ) {}
 
   async create(createAlbumDto: CreateAlbumDto) {
-    const album = this.albumRepository.create({
-      name: createAlbumDto.name,
-      year: createAlbumDto.year,
-      artistId: createAlbumDto.artistId,
-    });
+    const album = this.albumRepository.create(createAlbumDto);
 
-    await this.albumRepository.save(album);
-    return album;
+    return this.albumRepository.save(album);
   }
 
   async findAll() {
@@ -37,33 +31,21 @@ export class AlbumService {
   }
 
   async update(id: string, updateAlbumDto: UpdateAlbumDto) {
-    const album = await this.albumRepository.findOneBy({ id });
+    const result = await this.albumRepository.update(id, updateAlbumDto);
 
-    if (!album) throw new NotFoundException('Album not found');
+    if (result.affected === 0) {
+      throw new NotFoundException('Album not found');
+    }
 
-    Object.assign(album, {
-      name: !isUndefined(updateAlbumDto.name)
-        ? updateAlbumDto.name
-        : album.name,
-      year: !isUndefined(updateAlbumDto.year)
-        ? updateAlbumDto.year
-        : album.year,
-      artistId: !isUndefined(updateAlbumDto.artistId)
-        ? updateAlbumDto.artistId
-        : album.artistId,
-    });
-
-    await this.albumRepository.save(album);
-
-    return album;
+    return this.findOne(id);
   }
 
   async remove(id: string) {
-    const album = await this.albumRepository.findOneBy({ id });
+    const result = await this.albumRepository.delete(id);
 
-    if (!album) throw new NotFoundException('Album not found');
-
-    await this.albumRepository.remove(album);
+    if (result.affected === 0) {
+      throw new NotFoundException('Album not found');
+    }
 
     return { id };
   }
