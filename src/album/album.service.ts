@@ -4,6 +4,7 @@ import {
   Injectable,
   NotFoundException,
 } from '@nestjs/common';
+import { isUndefined } from '../helpers';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { CreateAlbumDto } from './dto/create-album.dto';
@@ -49,14 +50,15 @@ export class AlbumService {
     if (!album) throw new NotFoundException('Album not found');
 
     Object.assign(album, {
-      name:
-        updateAlbumDto.name !== undefined ? updateAlbumDto.name : album.name,
-      year:
-        updateAlbumDto.year !== undefined ? updateAlbumDto.year : album.year,
-      artistId:
-        updateAlbumDto.artistId !== undefined
-          ? updateAlbumDto.artistId
-          : album.artistId,
+      name: !isUndefined(updateAlbumDto.name)
+        ? updateAlbumDto.name
+        : album.name,
+      year: !isUndefined(updateAlbumDto.year)
+        ? updateAlbumDto.year
+        : album.year,
+      artistId: !isUndefined(updateAlbumDto.artistId)
+        ? updateAlbumDto.artistId
+        : album.artistId,
     });
 
     await this.albumRepository.save(album);
