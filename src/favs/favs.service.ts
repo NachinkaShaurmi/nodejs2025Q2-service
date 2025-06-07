@@ -5,7 +5,7 @@ import {
   UnprocessableEntityException,
 } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Repository } from 'typeorm';
+import { IsNull, Not, Repository } from 'typeorm';
 import { ArtistService } from 'src/artist/artist.service';
 import { AlbumService } from 'src/album/album.service';
 import { TrackService } from 'src/track/track.service';
@@ -25,34 +25,26 @@ export class FavsService {
   ) {}
 
   async findAll() {
-    const favorites = await this.favoriteRepository.find();
+    const artistFavorites = await this.favoriteRepository.find({
+      where: { artistId: Not(IsNull()) },
+      relations: ['artist'],
+    });
 
-    const artists = [];
-    const albums = [];
-    const tracks = [];
+    const albumFavorites = await this.favoriteRepository.find({
+      where: { albumId: Not(IsNull()) },
+      relations: ['album'],
+    });
 
-    for (const fav of favorites) {
-      try {
-        const artist = await this.artistService.findOne(fav.artistId);
-        artists.push(artist);
-      } catch (error) {}
-    }
+    const trackFavorites = await this.favoriteRepository.find({
+      where: { trackId: Not(IsNull()) },
+      relations: ['track'],
+    });
 
-    for (const fav of favorites) {
-      try {
-        const album = await this.albumService.findOne(fav.albumId);
-        albums.push(album);
-      } catch (error) {}
-    }
-
-    for (const fav of favorites) {
-      try {
-        const track = await this.trackService.findOne(fav.trackId);
-        tracks.push(track);
-      } catch (error) {}
-    }
-
-    return { artists, albums, tracks };
+    return {
+      artists: artistFavorites.map((fav) => fav.artist).filter(Boolean),
+      albums: albumFavorites.map((fav) => fav.album).filter(Boolean),
+      tracks: trackFavorites.map((fav) => fav.track).filter(Boolean),
+    };
   }
 
   async addArtist(id: string) {
