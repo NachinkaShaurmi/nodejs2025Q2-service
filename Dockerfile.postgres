@@ -1,5 +1,7 @@
 FROM postgres:16-alpine
 
-COPY ./init-scripts/ /docker-entrypoint-initdb.d/
+COPY ./src/migrations/ /docker-entrypoint-initdb.d/
 
-EXPOSE ${POSTGRES_PORT:-5432}
+ENV PGDATA=/var/lib/postgresql/data
+
+CMD ["postgres"]

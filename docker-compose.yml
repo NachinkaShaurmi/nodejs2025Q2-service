@@ -14,6 +14,7 @@ services:
       - postgres
     volumes:
       - .:/app
+      - /app/node_modules
     networks:
       - app-network
     restart: on-failure

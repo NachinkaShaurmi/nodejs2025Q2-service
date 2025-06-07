@@ -17,11 +17,11 @@ WORKDIR /app
 
 COPY package*.json ./
 
-RUN npm ci --omit=dev
+RUN npm ci
 
 COPY --from=builder /app/dist ./dist
 COPY doc ./doc
 
 EXPOSE ${PORT:-4000}
 
-CMD ["npm", "run", "start:prod"]
+CMD ["npm", "run", "start:dev"]
