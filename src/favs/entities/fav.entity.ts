@@ -4,10 +4,13 @@ import {
   PrimaryGeneratedColumn,
   ManyToOne,
   JoinColumn,
+  Index,
 } from 'typeorm';
+import { IsOptional, IsUUID } from 'class-validator';
 import { Artist } from '../../artist/entities/artist.entity';
 import { Album } from '../../album/entities/album.entity';
 import { Track } from '../../track/entities/track.entity';
+import { Exclude } from 'class-transformer';
 
 @Entity('favorites')
 export class Favorite {
@@ -15,24 +18,36 @@ export class Favorite {
   id: string;
 
   @Column('uuid', { nullable: true, name: 'artist_id' })
-  artistId: string;
+  @IsOptional()
+  @IsUUID()
+  artistId: string | null;
 
   @Column('uuid', { nullable: true, name: 'album_id' })
-  albumId: string;
+  @IsOptional()
+  @IsUUID()
+  albumId: string | null;
 
   @Column('uuid', { nullable: true, name: 'track_id' })
-  trackId: string;
+  @IsOptional()
+  @IsUUID()
+  trackId: string | null;
 
-  @ManyToOne(() => Artist, { onDelete: 'CASCADE' })
+  @Index()
+  @ManyToOne(() => Artist, { nullable: true, onDelete: 'CASCADE' })
   @JoinColumn({ name: 'artist_id' })
+  @Exclude()
   artist?: Artist;
 
-  @ManyToOne(() => Album, { onDelete: 'CASCADE' })
+  @Index()
+  @ManyToOne(() => Album, { nullable: true, onDelete: 'CASCADE' })
   @JoinColumn({ name: 'album_id' })
+  @Exclude()
   album?: Album;
 
-  @ManyToOne(() => Track, { onDelete: 'CASCADE' })
+  @Index()
+  @ManyToOne(() => Track, { nullable: true, onDelete: 'CASCADE' })
   @JoinColumn({ name: 'track_id' })
+  @Exclude()
   track?: Track;
 
   constructor(partial: Partial<Favorite> = {}) {

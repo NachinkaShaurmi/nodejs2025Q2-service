@@ -4,9 +4,11 @@ import {
   PrimaryGeneratedColumn,
   ManyToOne,
   JoinColumn,
+  Index,
 } from 'typeorm';
 import { Album } from '../../album/entities/album.entity';
 import { Artist } from '../../artist/entities/artist.entity';
+import { Exclude } from 'class-transformer';
 
 @Entity('tracks')
 export class Track {
@@ -25,12 +27,16 @@ export class Track {
   @Column('uuid', { nullable: true, name: 'artist_id' })
   artistId: string | null;
 
+  @Index()
   @ManyToOne(() => Album, { onDelete: 'SET NULL' })
   @JoinColumn({ name: 'album_id' })
+  @Exclude()
   album?: Album;
 
-  @ManyToOne(() => Artist, { onDelete: 'SET NULL' })
+  @Index()
+  @ManyToOne(() => Artist, { nullable: true, onDelete: 'SET NULL' })
   @JoinColumn({ name: 'artist_id' })
+  @Exclude()
   artist?: Artist;
 
   constructor(partial: Partial<Track>) {
