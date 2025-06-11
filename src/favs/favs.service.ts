@@ -1,5 +1,4 @@
 import {
-  forwardRef,
   Inject,
   Injectable,
   UnprocessableEntityException,
@@ -16,11 +15,11 @@ export class FavsService {
   constructor(
     @InjectRepository(Favorite)
     private favoriteRepository: Repository<Favorite>,
-    @Inject(forwardRef(() => ArtistService))
+    @Inject(ArtistService)
     private readonly artistService: ArtistService,
-    @Inject(forwardRef(() => AlbumService))
+    @Inject(AlbumService)
     private readonly albumService: AlbumService,
-    @Inject(forwardRef(() => TrackService))
+    @Inject(TrackService)
     private readonly trackService: TrackService,
   ) {}
 

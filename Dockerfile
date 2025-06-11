@@ -20,6 +20,7 @@ COPY package*.json ./
 RUN npm ci
 
 COPY --from=builder /app/dist ./dist
+
 COPY doc ./doc
 
 EXPOSE ${PORT:-4000}
