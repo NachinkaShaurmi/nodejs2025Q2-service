@@ -7,12 +7,18 @@ import { readFile } from 'fs/promises';
 import { load } from 'js-yaml';
 import { dirname, join } from 'node:path';
 import { ConfigService } from '@nestjs/config';
+import { LoggerService } from './logger/logger.service';
+import { HttpExceptionFilter } from './logger/http-exception.filter';
 
 async function bootstrap() {
   const app = await NestFactory.create(AppModule);
 
   const configService = app.get(ConfigService);
   const PORT = configService.get<number>('PORT', 4000);
+
+  const loggerService = app.get(LoggerService);
+
+  app.useGlobalFilters(new HttpExceptionFilter(loggerService));
 
   app.useGlobalPipes(new ValidationPipe({ transform: true }));
 
@@ -29,6 +35,21 @@ async function bootstrap() {
 
   SwaggerModule.setup('doc', app, document);
 
+  process.on('uncaughtException', (error) => {
+    loggerService.error('Uncaught Exception', 'UncaughtException', {
+      trace: error.stack,
+    });
+  });
+
+  process.on('unhandledRejection', (reason, promise) => {
+    loggerService.error('Unhandled Rejection', 'UnhandledRejection', {
+      trace: reason instanceof Error ? reason.stack : String(reason),
+      promise: String(promise),
+    });
+  });
+
   await app.listen(PORT);
+
+  loggerService.log(`Application is running on: http://localhost:${PORT}`);
 }
 bootstrap();
