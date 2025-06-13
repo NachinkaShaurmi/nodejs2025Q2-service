@@ -3,6 +3,7 @@ import {
   Injectable,
   NotFoundException,
 } from '@nestjs/common';
+import { ConfigService } from '@nestjs/config';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository, EntityManager } from 'typeorm';
 import * as bcrypt from 'bcrypt';
@@ -15,10 +16,21 @@ export class UserService {
   constructor(
     @InjectRepository(User)
     private userRepository: Repository<User>,
+    private configService: ConfigService,
   ) {}
 
+  private async hashPassword(password: string): Promise<string> {
+    const salt = this.configService.get('CRYPT_SALT');
+
+    return bcrypt.hash(password, parseInt(salt, 10));
+  }
+
   async create(createUserDto: CreateUserDto) {
-    const user = this.userRepository.create(createUserDto);
+    const hashedPassword = await this.hashPassword(createUserDto.password);
+    const user = this.userRepository.create({
+      ...createUserDto,
+      password: hashedPassword,
+    });
 
     return this.userRepository.save(user);
   }
@@ -50,7 +62,9 @@ export class UserService {
           throw new ForbiddenException('Old password is incorrect');
         }
 
-        const hashedPassword = await bcrypt.hash(updateUserDto.newPassword, 10);
+        const hashedPassword = await this.hashPassword(
+          updateUserDto.newPassword,
+        );
 
         const result = await manager
           .createQueryBuilder()

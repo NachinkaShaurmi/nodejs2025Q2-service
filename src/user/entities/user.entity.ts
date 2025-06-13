@@ -4,11 +4,8 @@ import {
   PrimaryGeneratedColumn,
   CreateDateColumn,
   UpdateDateColumn,
-  BeforeInsert,
-  BeforeUpdate,
 } from 'typeorm';
 import { Exclude, Transform } from 'class-transformer';
-import * as bcrypt from 'bcrypt';
 
 @Entity('users')
 export class User {
@@ -36,13 +33,5 @@ export class User {
 
   constructor(partial: Partial<User>) {
     Object.assign(this, partial);
-  }
-
-  @BeforeInsert()
-  @BeforeUpdate()
-  async hashPassword() {
-    if (this.password) {
-      this.password = await bcrypt.hash(this.password, 10);
-    }
   }
 }
