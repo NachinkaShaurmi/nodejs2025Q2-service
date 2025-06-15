@@ -33,7 +33,7 @@ git clone https://github.com/NachinkaShaurmi/nodejs2025Q2-service.git
 
 cd nodejs2025Q2-service
 
-git checkout dev2
+git checkout dev3
 ```
 
 ## Installing NPM modules
