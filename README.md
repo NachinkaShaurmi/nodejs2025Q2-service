@@ -62,22 +62,16 @@ For more information about OpenAPI/Swagger please visit https://swagger.io/.
 
 After application running open new terminal and enter:
 
-To run all tests without authorization
-
-```bash
-npm run test
-```
-
-To run only one of all test suites
-
-```bash
-npm run test -- <path to suite>
-```
-
 To run all test with authorization
 
 ```bash
 npm run test:auth
+```
+
+To run "refresh" tests
+
+```bash
+npm run test:refresh
 ```
 
 To run only specific test suite with authorization

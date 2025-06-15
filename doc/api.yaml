@@ -120,7 +120,7 @@ security:
   - bearerAuth: []
 
 paths:
-  /login:
+  /auth/login:
     post:
       tags:
         - Login
@@ -157,7 +157,7 @@ paths:
                 description: JWT Token
         403:
           description: Incorrect login or password
-  /signup:
+  /auth/signup:
     post:
       tags:
         - Signup
@@ -192,6 +192,46 @@ paths:
           description: Bad request
         409:
           description: Conflict. Login already exists
+  /auth/refresh:
+    post:
+      tags:
+        - Refresh
+      security: []
+      summary: Refresh
+      description: Refresh JWT-token
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              title: example
+              properties:
+                refreshToken:
+                  type: string
+                  minLength: 3
+                  maxLength: 255
+                  description: Refresh token
+              required:
+                - refreshToken
+      responses:
+        200:
+          description: Successful refresh
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  accessToken:
+                    type: string
+                    description: JWT Refresh Token
+                  refreshToken:
+                    type: string
+                    description: JWT Refresh Token
+        401:
+          description: No refresh token.
+        403:
+          description: Refresh token is invalid or expired.
   /user:
     get:
       tags:
